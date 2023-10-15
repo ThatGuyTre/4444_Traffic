@@ -1,6 +1,6 @@
 ## Overview
 
-This project seeks to harness the capabilities of artificial intelligence to optimize traffic routes. Every commuter has experienced the frustration of being caught at a long light or rnavigating through complex intersections tha seem inefficient. This project intends to tackle such challenges by modelling the traffic system as a graph, enabling the applications of AI algorithms to find the most efficient path.
+This project seeks to harness the capabilities of artificial intelligence to optimize traffic routes. Every commuter has experienced the frustration of being caught at a long light or navigating through complex intersections that seem inefficient. This project intends to tackle such challenges by modeling the traffic system as a graph, enabling the applications of AI algorithms to find the most efficient path.
 
 ### Dependencies and Running 
 
