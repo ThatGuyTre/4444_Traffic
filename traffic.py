@@ -93,6 +93,6 @@ def draw_graph(vertices, edges):
     
     plt.show()
 
-vertices, edges = generate_graph('Louisiana State University, Baton Rouge, Louisiana, USA', 10000)
+vertices, edges = generate_graph('Louisiana State University, Baton Rouge, Louisiana, USA', 1000)
 
 draw_graph(vertices, edges)
