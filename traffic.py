@@ -3,96 +3,131 @@ import networkx as nx
 import osmnx as ox
 import numpy as np
 
-"""
-Generates graph data around given address using a specified distance.
+class Vertice:
+    def __init__(self, ID, type_, state, traffic, longitude, latitude):
+        self.ID = ID
+        self.type = type_               # node type: traffic light, stop sign, None
+        self.state = state              # state for traffic light (green, red)
+        self.traffic = traffic          # traffic level (0-5)
+        self.longitude = longitude      # longitude
+        self.latitude = latitude        # latitude
 
-Vertices represnt intersections or endpoints with attributes: ID, type (traffic light,
-stop light, None), state (red, green), traffic (0-5), longitude, and latitude.
-
-Edges signify roads connecting vertices with attributes: name, speed limit, type (one-way
-or bi-directional), and geometry (keep or else we lose fancy graphs).
-"""
-def generate_graph(address, distance):
+    def __repr__(self):
+        return f"<Vertice(ID={self.ID}, traffic={self.traffic})>"
     
+class Edge:
+    def __init__(self, u, v, name, speed_limit, direction, geometry, state):
+        self.u = u                      # Starting node
+        self.v = v                      # Ending node
+        self.name = name                # Street name
+        self.speed_limit = speed_limit  # Speed limit
+        self.direction = direction      # One way or two way
+        self.geometry = geometry        # Road geometry
+        self.state = state              # Major or minor
+
+    def __repr__(self):
+        return f"<Edge(name={self.name}, state={self.state})>"
+    
+def generate_graph(address, distance):
+
+    """
+    Generate vertices and edges for a road network around the given address.
+
+    Parameters:
+    - address (str): The address to center the road network around.
+    - distance (float): Distance around the address to consider for the road network.
+
+    Returns:
+    - list: List of vertices (as dictionaries).
+    - list: List of edges (as tuples containing start node, end node, and a dictionary of edge attributes).
+    """
+
     # convert address into coordinate (longitude, latitude)
     location = ox.geocode(address)
-    
+
     # generate road graph centered at location coordinate
-    G = ox.graph_from_point(location, distance, network_type='drive')
-    
-    # extract nodes and edges from graph and convert to numpy arrays
+    G = ox.graph_from_point(location, distance, network_type='drive')       
+
+    # extract nodes and edges from graph and convert to numpy arrays        
     node_data = np.array(list(G.nodes(data=True)))
     edge_data = np.array(list(G.edges(data=True)))
-    
+
     # construct vertice list
     vertices = [
-        {
-            'ID': node,                           # node ID
-            'type': data.get('highway', None),    # node type: traffic light, stop sign, None
-            'state': None,                        # state for traffic light (green, red)
-            'traffic': 0 ,                        # traffic level (0-5)
-            'longitude': data['x'],               # longitude
-            'latitude': data['y']                 # latitude
-        }
+        Vertice(
+            ID=node,
+            type_=data.get('highway', None),
+            state=None,
+            traffic=0,
+            longitude=data['x'],
+            latitude=data['y']
+        )
         for node, data in node_data
     ]
+
     # construct edge list
     edges = [
-        (
-            u,
-            v,
-            {
-                'name': data.get('name', None),                                        # street name
-                'speed_limit': data.get('maxspeed', None),                             # speed limit
-                'direction': 'one-way' if data.get('oneway', False) else 'two-way',    # one way? or two way
-                'geometry': data.get('geometry', None)                                 # road geometry (needed for cool graphs)
-            }
+        Edge(
+            u=u,
+            v=v,
+            name=data.get('name', None),
+            speed_limit=data.get('maxspeed', None),
+            direction='one-way' if data.get('oneway', False) else 'two-way',
+            geometry=data.get('geometry', None),
+            state='major' if data.get('highway') in ['motorway', 'trunk', 'primary'] else 'minor'
         )
         for u, v, data in edge_data
     ]
-    
+
     return vertices, edges
 
-"""
-Visualize bi-directional graph given provided vertices and edges.
-
-Nodes are distinguished by type (red if stop sign, green if traffic
-light, blue if None) and edges by directionality (pink if one-way
-or black if bi-directional).
-"""
 def draw_graph(vertices, edges):
-    
+
+    """
+    Visualize a bi-directional graph using provided vertices and edges.     
+
+    Nodes are colored based on their type:
+    - Red for stop signs
+    - Green for traffic signals
+    - Blue for none
+
+    Edges are colored based on their direction:
+    - Pink for one-way roads
+    - Black for bi-directional roads
+
+    Parameters:
+    - vertices (list): List of vertices.
+    - edges (list): List of edges.
+    """
+
     # initialize multi-directional graph
     G = nx.MultiDiGraph()
-    
+
     # generate dictionary of node positions using ID as key and longitude, latitude pairs as values
-    pos = {v['ID']: (v['longitude'], v['latitude']) for v in vertices}
-    
+    pos = {v.ID: (v.longitude, v.latitude) for v in vertices}
+
     # determine node colors (red if stop sign, green if traffic signal, blue if None)
-    node_colors = np.array(['red' if v['type'] == 'stop' else 'green' if v['type'] == 'traffic_signals' else 'blue' for v in vertices])
-    
-    # determine edge colors (black  bi-directional, pink one-way)
-    edge_colors = np.array(['pink' if e[2]['direction'] == 'one-way' else 'black' for e in edges])
-    
+    node_colors = np.array(['red' if v.type == 'stop' else 'green' if v.type == 'traffic_signals' else 'blue' for v in vertices])
+
+    # determine edge colors (black for bi-directional, pink for one-way)    
+    edge_colors = np.array(['pink' if e.direction == 'one-way' else 'black' for e in edges])
+
     # add edges to graph: use geometry if possible, straight line otherwise.
-    for u, v, data in edges:
-        G.add_edge(u, v, path=data.get('geometry', None).coords if data['geometry'] else None)
+    for e in edges:
+        G.add_edge(e.u, e.v, path=e.geometry.coords if e.geometry else None)
 
     # adjust render size for figure
-    plt.figure(figsize=(12, 12), dpi=150)  # Increased DPI for higher resolution
+    plt.figure(figsize=(12, 12), dpi=150)
 
     # draw edges
     for u, v, data in G.edges(data=True):
-        color_idx = np.where((u, v) == np.array(edges)[:, :2])[0][0]
+        edge_object = next(edge for edge in edges if edge.u == u and edge.v == v)
+        color_idx = edges.index(edge_object)
         coords = data.get('path', [pos[u], pos[v]])
         if coords:  # Ensure coords is not None
             plt.plot(*zip(*coords), color=edge_colors[color_idx], linewidth=1.5)
 
-    # Draw nodes (draw nodes last or else they render ugly)
-    nx.draw_networkx_nodes(G, pos, node_size=40, node_color=node_colors)
-    
-    plt.show()
+    # Draw nodes (draw nodes last to ensure they're on top)
+    nx.draw_networkx_nodes(G, pos, node_size=40, node_color=node_colors)    
 
-vertices, edges = generate_graph('Louisiana State University, Baton Rouge, Louisiana, USA', 1000)
-
-draw_graph(vertices, edges)
+    plt.show()⏎ 
