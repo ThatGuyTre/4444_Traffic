@@ -5,8 +5,6 @@ import numpy as np
 from search import *
 from utils import *
 
-print('Imported traffic.py')
-
 class Vertex:
     def __init__(self, ID, type_, state, traffic, longitude, latitude):
         self.ID = ID
@@ -18,8 +16,6 @@ class Vertex:
 
     def __repr__(self):
         return f"<Vertice(ID={self.ID}, traffic={self.traffic})>"
-    
-print("Vertex class defined")
     
 class Edge:
     def __init__(self, u, v, name, speed_limit, direction, geometry, state):
@@ -33,8 +29,6 @@ class Edge:
 
     def __repr__(self):
         return f"<Edge(name={self.name}, state={self.state})>"
-    
-print("Edge class defined")
     
 def generate_graph(address, distance):
 
@@ -54,11 +48,16 @@ def generate_graph(address, distance):
     location = ox.geocode(address)
 
     # generate road graph centered at location coordinate
-    G = ox.graph_from_point(location, distance, network_type='drive')       
+    G = ox.graph_from_point(location, distance, network_type='drive')
+    G_proj = ox.project_graph(G)
+    G2 = ox.consolidate_intersections(G_proj, rebuild_graph=True, tolerance=15, dead_ends=False)
+
+    stats = ox.basic_stats(G)
+    print(stats) 
 
     # extract nodes and edges from graph and convert to numpy arrays        
-    node_data = np.array(list(G.nodes(data=True)))
-    edge_data = np.array(list(G.edges(data=True)))
+    node_data = np.array(list(G2.nodes(data=True)))
+    edge_data = np.array(list(G2.edges(data=True)))
 
     # construct vertice list
     vertices = [
@@ -111,7 +110,7 @@ def deleteSingles(vertices, edges):
 
     single_neighbors = {v for v in single_neighbors if (sum(v == edge.u or v == edge.v for edge in edges) <= 1)}
 
-    print(f"Deleting {len(single_neighbors)} single vertices...")
+    print("Deleting {len(single_neighbors)} single vertices...")
 
     # Remove vertices with one or zero neighbors and their corresponding edges
     vertices = [v for v in vertices if v.ID not in single_neighbors]
@@ -170,13 +169,11 @@ def draw_graph(vertices, edges):
 
     plt.show()
 
-print("draw_graph function defined")
-
 
 print("Generating graph...")
 # generate graph
-address_lsu = "Memorial Tower, Baton Rouge, LA"
-distance_lsu = 200  # in meters
+address_lsu = "30°24'47.9\"N 91°10'34.5\"W"
+distance_lsu = 1100  # in meters
 vertices_lsu, edges_lsu = generate_graph(address_lsu, distance_lsu)
 
 print("Deleting singles...")
