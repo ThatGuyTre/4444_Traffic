@@ -2,8 +2,12 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import osmnx as ox
 import numpy as np
+from search import *
+from utils import *
 
-class Vertice:
+print('Imported traffic.py')
+
+class Vertex:
     def __init__(self, ID, type_, state, traffic, longitude, latitude):
         self.ID = ID
         self.type = type_               # node type: traffic light, stop sign, None
@@ -14,6 +18,8 @@ class Vertice:
 
     def __repr__(self):
         return f"<Vertice(ID={self.ID}, traffic={self.traffic})>"
+    
+print("Vertex class defined")
     
 class Edge:
     def __init__(self, u, v, name, speed_limit, direction, geometry, state):
@@ -27,6 +33,8 @@ class Edge:
 
     def __repr__(self):
         return f"<Edge(name={self.name}, state={self.state})>"
+    
+print("Edge class defined")
     
 def generate_graph(address, distance):
 
@@ -54,7 +62,7 @@ def generate_graph(address, distance):
 
     # construct vertice list
     vertices = [
-        Vertice(
+        Vertex(
             ID=node,
             type_=data.get('highway', None),
             state=None,
@@ -80,6 +88,8 @@ def generate_graph(address, distance):
     ]
 
     return vertices, edges
+
+print("generate_graph function defined")
 
 def draw_graph(vertices, edges):
 
@@ -117,7 +127,7 @@ def draw_graph(vertices, edges):
         G.add_edge(e.u, e.v, path=e.geometry.coords if e.geometry else None)
 
     # adjust render size for figure
-    plt.figure(figsize=(12, 12), dpi=150)
+    plt.figure(figsize=(10, 10), dpi=100)
 
     # draw edges
     for u, v, data in G.edges(data=True):
@@ -130,4 +140,16 @@ def draw_graph(vertices, edges):
     # Draw nodes (draw nodes last to ensure they're on top)
     nx.draw_networkx_nodes(G, pos, node_size=40, node_color=node_colors)    
 
-    plt.show()⏎ 
+    plt.show()
+
+print("draw_graph function defined")
+
+
+print("Generating graph...")
+# generate graph
+address_lsu = "Memorial Tower, Baton Rouge, LA"
+distance_lsu = 1300  # in meters
+vertices_lsu, edges_lsu = generate_graph(address_lsu, distance_lsu)
+
+print("Drawing graph...")
+draw_graph(vertices_lsu, edges_lsu)
