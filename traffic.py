@@ -89,7 +89,35 @@ def generate_graph(address, distance):
 
     return vertices, edges
 
-print("generate_graph function defined")
+
+def deleteSingles(vertices, edges):
+    """
+    Remove vertices with one or zero neighbors and their corresponding edges.
+
+    Parameters:
+    - vertices (list): List of vertices.
+    - edges (list): List of edges.
+
+    Returns:
+    - list: Updated list of vertices.
+    - list: Updated list of edges.
+    """
+
+    # Find vertices with only one neighbor or no neighbors
+    single_neighbors = set()
+    for edge in edges:
+        single_neighbors.add(edge.u)
+        single_neighbors.add(edge.v)
+
+    single_neighbors = {v for v in single_neighbors if (sum(v == edge.u or v == edge.v for edge in edges) <= 1)}
+
+    print(f"Deleting {len(single_neighbors)} single vertices...")
+
+    # Remove vertices with one or zero neighbors and their corresponding edges
+    vertices = [v for v in vertices if v.ID not in single_neighbors]
+    edges = [e for e in edges if e.u not in single_neighbors and e.v not in single_neighbors]
+
+    return vertices, edges
 
 def draw_graph(vertices, edges):
 
@@ -148,8 +176,11 @@ print("draw_graph function defined")
 print("Generating graph...")
 # generate graph
 address_lsu = "Memorial Tower, Baton Rouge, LA"
-distance_lsu = 1300  # in meters
+distance_lsu = 200  # in meters
 vertices_lsu, edges_lsu = generate_graph(address_lsu, distance_lsu)
 
+print("Deleting singles...")
+trimmed_verts, trimmed_edges = deleteSingles(vertices_lsu, edges_lsu)
+
 print("Drawing graph...")
-draw_graph(vertices_lsu, edges_lsu)
+draw_graph(trimmed_verts, trimmed_edges)
