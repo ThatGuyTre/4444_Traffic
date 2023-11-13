@@ -181,3 +181,5 @@ trimmed_verts, trimmed_edges = deleteSingles(vertices_lsu, edges_lsu)
 
 print("Drawing graph...")
 draw_graph(trimmed_verts, trimmed_edges)
+
+print("Setting up traffic problem...")
