@@ -90,9 +90,9 @@ def generate_graph(address, distance):
     return vertices, edges
 
 
-def deleteSingles(vertices, edges):
+def deleteIllegalEdges(vertices, edges):
     """
-    Remove vertices with one or zero neighbors and their corresponding edges.
+    Remove edges with zero or one vertex neighbors.
 
     Parameters:
     - vertices (list): List of vertices.
@@ -104,18 +104,19 @@ def deleteSingles(vertices, edges):
     """
 
     # Find vertices with only one neighbor or no neighbors
-    single_neighbors = set()
+    illegal_neighbors = set()
     for edge in edges:
-        single_neighbors.add(edge.u)
-        single_neighbors.add(edge.v)
+        illegal_neighbors.add(edge.u)
+        illegal_neighbors.add(edge.v)
 
-    single_neighbors = {v for v in single_neighbors if (sum(v == edge.u or v == edge.v for edge in edges) <= 1)}
+    illegal_neighbors = [v for v in illegal_neighbors if v not in vertices]
+    illegal_neighbors = [u for u in illegal_neighbors if u not in vertices]
 
     print("Deleting {len(single_neighbors)} single vertices...")
 
     # Remove vertices with one or zero neighbors and their corresponding edges
-    vertices = [v for v in vertices if v.ID not in single_neighbors]
-    edges = [e for e in edges if e.u not in single_neighbors and e.v not in single_neighbors]
+    vertices = [v for v in vertices if v.ID not in illegal_neighbors]
+    edges = [e for e in edges if e.u not in illegal_neighbors and e.v not in illegal_neighbors]
 
     return vertices, edges
 
@@ -178,7 +179,7 @@ distance_lsu = 1100  # in meters
 vertices_lsu, edges_lsu = generate_graph(address_lsu, distance_lsu)
 
 print("Deleting singles...")
-trimmed_verts, trimmed_edges = deleteSingles(vertices_lsu, edges_lsu)
+trimmed_verts, trimmed_edges = deleteIllegalEdges(vertices_lsu, edges_lsu)
 
 print("Drawing graph...")
 draw_graph(trimmed_verts, trimmed_edges)

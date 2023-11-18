@@ -106,26 +106,36 @@ class TrafficProblem(Problem):
 	
 # Now that we have defined the problem, states, and actions, we can create the problem!
 
-startingSquare = (1, 1)
-dirtySquares = ((1, 5), (2, 5), (3, 5), (4, 5), (5, 5))
+def runTrafficProblem():
+	startingSquare = (1, 1)
+	dirtySquares = ((1, 5), (2, 5), (3, 5), (4, 5), (5, 5))
 
-def runTrafficProblem(problem, heuristic):
+	trafficProblem = TrafficProblem((startingSquare, dirtySquares), ())
+
+	print("Beginning Traffic Problem with A* Search and h1(n) heuristic:")
+
 	nodesExpanded = 0
 
-	# Run the problem with A* search and h1(n) heuristic
-	iteration = astar_search(problem, heuristic, True)
+	h1Iteration = astar_search(trafficProblem, trafficProblem.h1n, True)
 
 	# Output the path taken by the agent
-	for path in iteration.path():
+	for path in h1Iteration.path():
 		print('{!s:60s} Action taken: {!s:10s} Path Cost: {}'.format(path, path.action, path.path_cost))
 		nodesExpanded += 1
 
 	print("Total nodes expanded: " + str(nodesExpanded) + "\n")
 
-trafficProblem = TrafficProblem((startingSquare, dirtySquares), ())
+	#
 
-print("Beginning Traffic Problem with A* Search and h1(n) heuristic:")
-runTrafficProblem(trafficProblem, trafficProblem.h1n)
+	print("Beginning Traffic Problem with A* Search and h2(n) heuristic:")
 
-print("Beginning Traffic Problem with A* Search and h2(n) heuristic:")
-runTrafficProblem(trafficProblem, trafficProblem.h2n)
+	nodesExpanded = 0
+
+	h2Iteration = astar_search(trafficProblem, trafficProblem.h2n, True)
+
+	# Output the path taken by the agent
+	for path in h2Iteration.path():
+		print('{!s:60s} Action taken: {!s:10s} Path Cost: {}'.format(path, path.action, path.path_cost))
+		nodesExpanded += 1
+
+	print("Total nodes expanded: " + str(nodesExpanded) + "\n")
