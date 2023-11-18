@@ -4,6 +4,7 @@ import osmnx as ox
 import numpy as np
 from search import *
 from utils import *
+from traffic_search import *
 
 class Vertex:
     def __init__(self, ID, type_, state, traffic, longitude, latitude):
