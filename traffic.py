@@ -6,6 +6,25 @@ from search import *
 from utils import *
 from traffic_search import *
 
+def findVertex(vertices, latitude, longitude):
+    """
+    Finds a vertex within a list of vertices, given the lat/long coords
+
+    Parameters:
+    - vertices (Vertex[]): a list of vertices to look through
+    - latitude: the latitude of the Vertex to find
+    - longitude: the longitude of the Vertex to find
+
+    Returns:
+    - vert: the Vertex object found, or -1 if not found.
+    """
+    fuzz = 0.00001 # Fuzz factor to account for floating point errors, within around 1 meter
+
+    for vert in vertices:
+        if abs(vert.latitude-latitude) <= fuzz and abs(vert.longitude-longitude) <= fuzz:
+            return vert
+    return -1
+
 class Vertex:
     def __init__(self, ID, type_, state, traffic, longitude, latitude):
         self.ID = ID
@@ -185,4 +204,10 @@ print("Drawing graph...")
 draw_graph(trimmed_verts, trimmed_edges)
 
 print("Setting up traffic problem...")
+
+# Todo make a function to easily find a Vertex at a given intersection.
+# starting_location and goal_state should be Vertex objects, but we need their lat/long or ID to find them.
+
+starting_location = "Highland Road"
+goal_state = "Staring Ln"
 runTrafficProblem(trimmed_verts, trimmed_edges)
