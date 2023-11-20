@@ -208,6 +208,7 @@ trimmed_verts, trimmed_edges = deleteIllegalEdges(vertices_lsu, edges_lsu)
 
 print("Drawing graph...")
 draw_graph(trimmed_verts, trimmed_edges)
+# After this, execution hangs. Not sure how to progress further in the program from here.
 
 print("Setting up traffic problem...")
 
