@@ -1,5 +1,7 @@
 from search import *
 
+# Functions within TrafficProblem are documented within search.py
+
 def findVertexFromCoordinates(longitude, latitude, vertices):
 	"""
 	Find the vertex with the given coordinates.
@@ -86,7 +88,7 @@ class TrafficProblem(Problem):
 				# Get the distance to the edge
 				distance = edge.distance
 				# Calculate the cost of the edge
-				cost = self.overall_cost
+				cost = c # Previous cost
 				# If the traffic level is 0, the cost is 1.1* the speed limit
 				if trafficLevel == 1:
 					cost += 1 / (1.1*speedLimit * distance)
@@ -104,15 +106,15 @@ class TrafficProblem(Problem):
 					cost += 1 / (0.1*speedLimit * distance)
 				# Return the cost
 				return cost
-		# If the action is not in the list of edges, return 0
-		return 0
+		# If the action is not in the list of edges, return -1
+		return -1
 	
+	# Made for programming project. May not be needed for this.
 	def goal_test(self, state):
 		# Goal test: self Vertex is the same as the goal Vertex
 		return self
-	
-		# Testing to see if the agent is at the goal location
 
+	# Made for programming project. May not be needed for this.
 	def ws(self, state):	
 		# w(s) = number of dirty squares in the state
 		return len(state[1])
@@ -137,10 +139,12 @@ class TrafficProblem(Problem):
 	
 # Now that we have defined the problem, states, and actions, we can create the problem!
 
-def runTrafficProblem(startingLocation, goalState):
-	# Starting state should be the vertex where the agent is at
+def runTrafficProblem(startingLocation, goalState, vertices, edges):
+	# Starting state should be the whole map, startingLocation is the location of the agent
+	startingState = (vertices, edges)
 	trafficProblem = TrafficProblem(startingLocation, startingState, ())
 	# Goal state should be the map where the agent is at the goal location
+	# May not be needed for this problem
 	trafficProblem.goal_test = goalState
 
 	print("Beginning Traffic Problem with A* Search and h1(n) heuristic:")
