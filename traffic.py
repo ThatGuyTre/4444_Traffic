@@ -112,6 +112,7 @@ def generate_graph(address, distance):
 def deleteIllegalEdges(vertices, edges):
     """
     Remove edges with zero or one vertex neighbors.
+    Currently doesn't really do much since the simplifyGraph function is a thing
 
     Parameters:
     - vertices (list): List of vertices.
@@ -121,17 +122,22 @@ def deleteIllegalEdges(vertices, edges):
     - list: Updated list of vertices.
     - list: Updated list of edges.
     """
-
     # Find vertices with only one neighbor or no neighbors
     illegal_neighbors = set()
     for edge in edges:
         illegal_neighbors.add(edge.u)
         illegal_neighbors.add(edge.v)
 
-    illegal_neighbors = [v for v in illegal_neighbors if v not in vertices]
-    illegal_neighbors = [u for u in illegal_neighbors if u not in vertices]
+    print("deleteIllegalEdges:")
+    print(illegal_neighbors)
 
-    print("Deleting {len(single_neighbors)} single vertices...")
+    # Create an array of all ids in vertices
+    verts = [v.ID for v in vertices]
+
+    illegal_neighbors = [v for v in illegal_neighbors if v not in verts]
+    illegal_neighbors = [u for u in illegal_neighbors if u not in verts]
+
+    print("Deleting " + str(len(illegal_neighbors)) + " single vertices...")
 
     # Remove vertices with one or zero neighbors and their corresponding edges
     vertices = [v for v in vertices if v.ID not in illegal_neighbors]
