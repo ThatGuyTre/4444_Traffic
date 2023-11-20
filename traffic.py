@@ -209,5 +209,5 @@ print("Setting up traffic problem...")
 # starting_location and goal_state should be Vertex objects, but we need their lat/long or ID to find them.
 
 starting_location = "Highland Road"
-goal_state = "Staring Ln"
-runTrafficProblem(trimmed_verts, trimmed_edges)
+goal_state = "Staring Lane"
+runTrafficProblem(starting_location, goal_state, trimmed_verts, trimmed_edges)
