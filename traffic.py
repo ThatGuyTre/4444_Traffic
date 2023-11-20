@@ -185,3 +185,4 @@ print("Drawing graph...")
 draw_graph(trimmed_verts, trimmed_edges)
 
 print("Setting up traffic problem...")
+runTrafficProblem(trimmed_verts, trimmed_edges)
