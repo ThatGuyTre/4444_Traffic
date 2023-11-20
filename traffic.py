@@ -210,4 +210,4 @@ print("Setting up traffic problem...")
 
 starting_location = "Highland Road"
 goal_state = "Staring Lane"
-runTrafficProblem(starting_location, goal_state, trimmed_verts, trimmed_edges)
+# runTrafficProblem(starting_location, goal_state, trimmed_verts, trimmed_edges)
