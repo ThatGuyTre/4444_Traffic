@@ -27,7 +27,7 @@ def findVertex(vertices, latitude, longitude):
 
 class Vertex:
     def __init__(self, ID, type_, state, traffic, longitude, latitude):
-        self.ID = ID
+        self.ID = ID                    # node ID is basically an index number
         self.type = type_               # node type: traffic light, stop sign, None
         self.state = state              # state for traffic light (green, red)
         self.traffic = traffic          # traffic level (0-5)
@@ -127,9 +127,6 @@ def deleteIllegalEdges(vertices, edges):
     for edge in edges:
         illegal_neighbors.add(edge.u)
         illegal_neighbors.add(edge.v)
-
-    print("deleteIllegalEdges:")
-    print(illegal_neighbors)
 
     # Create an array of all ids in vertices
     verts = [v.ID for v in vertices]
