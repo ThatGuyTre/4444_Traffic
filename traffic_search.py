@@ -77,7 +77,7 @@ class TrafficProblem(Problem):
 		#			 heavy traffic = 0.5* the speed limit 		(4)
 		#			 gridlock = 0.1* the speed limit 			(5)
 
-		# Iterate through the list of porential actions
+		# Iterate through the list of potential actions
 		for edge in state1.edges:
 			# If the action is the current edge
 			if edge == action:
@@ -89,19 +89,19 @@ class TrafficProblem(Problem):
 				distance = edge.distance
 				# Calculate the cost of the edge
 				cost = c # Previous cost
-				# If the traffic level is 0, the cost is 1.1* the speed limit
+				# If the traffic level is 1, the cost is 1.1* the speed limit
 				if trafficLevel == 1:
 					cost += 1 / (1.1*speedLimit * distance)
-				# If the traffic level is 1, the cost is 1.0* the speed limit
+				# If the traffic level is 2, the cost is 1.0* the speed limit
 				elif trafficLevel == 2:
 					cost += 1 / (1.0*speedLimit * distance)
-				# If the traffic level is 2, the cost is 0.7* the speed limit
+				# If the traffic level is 3, the cost is 0.7* the speed limit
 				elif trafficLevel == 3:
 					cost += 1 / (0.7*speedLimit * distance)
-				# If the traffic level is 3, the cost is 0.5* the speed limit
+				# If the traffic level is 4, the cost is 0.5* the speed limit
 				elif trafficLevel == 4:
 					cost += 1 / (0.5*speedLimit * distance)
-				# If the traffic level is 4, the cost is 0.1* the speed limit
+				# If the traffic level is 5, the cost is 0.1* the speed limit
 				elif trafficLevel == 5:
 					cost += 1 / (0.1*speedLimit * distance)
 				# Return the cost
