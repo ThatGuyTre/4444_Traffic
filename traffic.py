@@ -1,155 +1,222 @@
+import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import networkx as nx
 import osmnx as ox
-import numpy as np
-from search import *
-from utils import *
 
-print('Imported traffic.py')
-
-class Vertex:
-    def __init__(self, ID, type_, state, traffic, longitude, latitude):
-        self.ID = ID
-        self.type = type_               # node type: traffic light, stop sign, None
-        self.state = state              # state for traffic light (green, red)
-        self.traffic = traffic          # traffic level (0-5)
-        self.longitude = longitude      # longitude
-        self.latitude = latitude        # latitude
-
-    def __repr__(self):
-        return f"<Vertice(ID={self.ID}, traffic={self.traffic})>"
-    
-print("Vertex class defined")
-    
-class Edge:
-    def __init__(self, u, v, name, speed_limit, direction, geometry, state):
-        self.u = u                      # Starting node
-        self.v = v                      # Ending node
-        self.name = name                # Street name
-        self.speed_limit = speed_limit  # Speed limit
-        self.direction = direction      # One way or two way
-        self.geometry = geometry        # Road geometry
-        self.state = state              # Major or minor
-
-    def __repr__(self):
-        return f"<Edge(name={self.name}, state={self.state})>"
-    
-print("Edge class defined")
-    
-def generate_graph(address, distance):
-
+def gen_graph(address, distance):
     """
-    Generate vertices and edges for a road network around the given address.
+    Generate dictionaries of vertices and edges for a road network around the given address.
 
     Parameters:
     - address (str): The address to center the road network around.
     - distance (float): Distance around the address to consider for the road network.
 
     Returns:
-    - list: List of vertices (as dictionaries).
-    - list: List of edges (as tuples containing start node, end node, and a dictionary of edge attributes).
+    - dict: Dictionary of vertices with custom IDs as keys and vertex data as tuples.
+    - dict: Dictionary of edges with custom IDs as keys and edge data as tuples.
     """
 
-    # convert address into coordinate (longitude, latitude)
+    # convert address into coordinate (long, lat)
     location = ox.geocode(address)
 
-    # generate road graph centered at location coordinate
-    G = ox.graph_from_point(location, distance, network_type='drive')       
+    # generate road graph centered at location
+    G = ox.graph_from_point(location, distance, network_type='drive')
 
-    # extract nodes and edges from graph and convert to numpy arrays        
-    node_data = np.array(list(G.nodes(data=True)))
-    edge_data = np.array(list(G.edges(data=True)))
+    nodes = {}
+    edges = {}
 
-    # construct vertice list
-    vertices = [
-        Vertex(
-            ID=node,
-            type_=data.get('highway', None),
-            state=None,
-            traffic=0,
-            longitude=data['x'],
-            latitude=data['y']
+    edge_id = 0
+
+    # process nodes
+    for node, data in G.nodes(data=True):
+        nodes[node] = (
+            data.get('highway', None),
+            None,
+            0,
+            data['x'],
+            data['y']
         )
-        for node, data in node_data
-    ]
 
-    # construct edge list
-    edges = [
-        Edge(
-            u=u,
-            v=v,
-            name=data.get('name', None),
-            speed_limit=data.get('maxspeed', None),
-            direction='one-way' if data.get('oneway', False) else 'two-way',
-            geometry=data.get('geometry', None),
-            state='major' if data.get('highway') in ['motorway', 'trunk', 'primary'] else 'minor'
+    # process edges
+    for u, v, data in G.edges(data=True):
+        edges[edge_id] = (
+            u,
+            v,
+            data.get('name', None),
+            'one-way' if data.get('oneway', False) else 'two-way',
+            data.get('geometry', None),
+            'major' if data.get('highway') in ['motorway', 'trunk', 'primary'] else 'minor'
         )
-        for u, v, data in edge_data
-    ]
+        edge_id += 1
 
-    return vertices, edges
+    return nodes, edges
 
-print("generate_graph function defined")
+import matplotlib.pyplot as plt
+import networkx as nx
+import matplotlib.animation as animation
 
-def draw_graph(vertices, edges):
+import matplotlib.pyplot as plt
+import networkx as nx
+import matplotlib.animation as animation
 
+def animate_graph(vertices, edges, path_ids):
     """
-    Visualize a bi-directional graph using provided vertices and edges.     
-
-    Nodes are colored based on their type:
-    - Red for stop signs
-    - Green for traffic signals
-    - Blue for none
-
-    Edges are colored based on their direction:
-    - Pink for one-way roads
-    - Black for bi-directional roads
+    Animates the graph with the path from start to goal highlighted.
 
     Parameters:
-    - vertices (list): List of vertices.
-    - edges (list): List of edges.
+    - vertices (dict): A dictionary of node information.
+    - edges (dict): A dictionary of edge information.
+    - path_ids (list): A list of node IDs representing the path from start to goal.
+
+    Returns:
+    - None
     """
 
-    # initialize multi-directional graph
-    G = nx.MultiDiGraph()
+    # Initialize a directed graph
+    G = nx.DiGraph()
 
-    # generate dictionary of node positions using ID as key and longitude, latitude pairs as values
-    pos = {v.ID: (v.longitude, v.latitude) for v in vertices}
+    # Add nodes to the graph
+    for node_id, node_data in vertices.items():
+        G.add_node(node_id, pos=(node_data[3], node_data[4]), type=node_data[0])
 
-    # determine node colors (red if stop sign, green if traffic signal, blue if None)
-    node_colors = np.array(['red' if v.type == 'stop' else 'green' if v.type == 'traffic_signals' else 'blue' for v in vertices])
+    # Add edges to the graph
+    for edge_id, edge_data in edges.items():
+        G.add_edge(edge_data[0], edge_data[1], geometry=edge_data[4], direction=edge_data[3])
 
-    # determine edge colors (black for bi-directional, pink for one-way)    
-    edge_colors = np.array(['pink' if e.direction == 'one-way' else 'black' for e in edges])
+    # Node positions for plotting
+    pos = {node_id: (node_data[3], node_data[4]) for node_id, node_data in vertices.items()}
 
-    # add edges to graph: use geometry if possible, straight line otherwise.
-    for e in edges:
-        G.add_edge(e.u, e.v, path=e.geometry.coords if e.geometry else None)
+    # Create plot
+    fig, ax = plt.subplots()
 
-    # adjust render size for figure
-    plt.figure(figsize=(10, 10), dpi=100)
+    def update(num):
+        ax.clear()
 
-    # draw edges
-    for u, v, data in G.edges(data=True):
-        edge_object = next(edge for edge in edges if edge.u == u and edge.v == v)
-        color_idx = edges.index(edge_object)
-        coords = data.get('path', [pos[u], pos[v]])
-        if coords:  # Ensure coords is not None
-            plt.plot(*zip(*coords), color=edge_colors[color_idx], linewidth=1.5)
+        # Draw nodes based on their type (only traffic signals and stop signs)
+        traffic_signal_nodes = [node_id for node_id, node_data in vertices.items() if node_data[0] == 'traffic_signals']
+        stop_sign_nodes = [node_id for node_id, node_data in vertices.items() if node_data[0] == 'stop']
 
-    # Draw nodes (draw nodes last to ensure they're on top)
-    nx.draw_networkx_nodes(G, pos, node_size=40, node_color=node_colors)    
+        nx.draw_networkx_nodes(G, pos, nodelist=traffic_signal_nodes, node_size=50, node_color='green', ax=ax)
+        nx.draw_networkx_nodes(G, pos, nodelist=stop_sign_nodes, node_size=50, node_color='red', ax=ax)
+
+        # Draw all edges with thin lines, respecting geometry
+        for u, v, data in G.edges(data=True):
+            if 'geometry' in data and data['geometry'] is not None:
+                points = list(data['geometry'].coords)
+                plt.plot(*zip(*points), color='black', lw=1)
+            else:
+                point1 = pos[u]
+                point2 = pos[v]
+                plt.plot([point1[0], point2[0]], [point1[1], point2[1]], color='black', lw=1)
+
+        # Draw path nodes and edges up to the current step
+        if num > 0:
+            path_edges = [(path_ids[i], path_ids[i+1]) for i in range(num-1)]
+            for u, v in path_edges:
+                if G[u][v]['geometry'] is not None:
+                    points = list(G[u][v]['geometry'].coords)
+                    plt.plot(*zip(*points), color='green', lw=2)
+                else:
+                    plt.plot([pos[u][0], pos[v][0]], [pos[u][1], pos[v][1]], color='green', lw=2)
+
+        # Label the start and goal nodes with pink color
+        if path_ids:
+            start_node, goal_node = path_ids[0], path_ids[-1]
+            nx.draw_networkx_labels(G, pos, labels={start_node: 'Start'}, font_color='blue', ax=ax)
+            nx.draw_networkx_labels(G, pos, labels={goal_node: 'Goal'}, font_color='blue', ax=ax)
+
+        ax.set_title(f"Step {num}/{len(path_ids)}")
+
+    ani = animation.FuncAnimation(fig, update, frames=len(path_ids) + 1, interval=1000, repeat=False)
 
     plt.show()
 
-print("draw_graph function defined")
+import matplotlib.pyplot as plt
+import networkx as nx
+
+def plot_graph(vertices, edges, path_ids):
+    """
+    Plots the graph with the path from start to goal highlighted.
+
+    Parameters:
+    - vertices (dict): A dictionary of node information.
+    - edges (dict): A dictionary of edge information.
+    - path_ids (list): A list of node IDs representing the path from start to goal.
+
+    Returns:
+    - None
+    """
+
+    # Initialize a directed graph
+    G = nx.DiGraph()
+
+    # Add nodes to the graph
+    for node_id, node_data in vertices.items():
+        G.add_node(node_id, pos=(node_data[3], node_data[4]), type=node_data[0])
+
+    # Add edges to the graph
+    for edge_id, edge_data in edges.items():
+        G.add_edge(edge_data[0], edge_data[1], geometry=edge_data[4], direction=edge_data[3])
+
+    # Node positions for plotting
+    pos = {node_id: (node_data[3], node_data[4]) for node_id, node_data in vertices.items()}
+
+    # Create plot
+    fig, ax = plt.subplots()
+
+    # Draw nodes based on their type (only traffic signals and stop signs)
+    traffic_signal_nodes = [node_id for node_id, node_data in vertices.items() if node_data[0] == 'traffic_signals']
+    stop_sign_nodes = [node_id for node_id, node_data in vertices.items() if node_data[0] == 'stop']
+
+    nx.draw_networkx_nodes(G, pos, nodelist=traffic_signal_nodes, node_size=50, node_color='green', ax=ax)
+    nx.draw_networkx_nodes(G, pos, nodelist=stop_sign_nodes, node_size=50, node_color='red', ax=ax)
+
+    # Draw all edges with thin lines, respecting geometry
+    for u, v, data in G.edges(data=True):
+        if 'geometry' in data and data['geometry'] is not None:
+            points = list(data['geometry'].coords)
+            plt.plot(*zip(*points), color='black', lw=1)
+        else:
+            point1 = pos[u]
+            point2 = pos[v]
+            plt.plot([point1[0], point2[0]], [point1[1], point2[1]], color='black', lw=1)
+
+    # Draw path nodes and edges
+    if path_ids:
+        path_edges = [(path_ids[i], path_ids[i+1]) for i in range(len(path_ids)-1)]
+        for u, v in path_edges:
+            if G[u][v]['geometry'] is not None:
+                points = list(G[u][v]['geometry'].coords)
+                plt.plot(*zip(*points), color='green', lw=2)
+            else:
+                plt.plot([pos[u][0], pos[v][0]], [pos[u][1], pos[v][1]], color='green', lw=2)
+
+        # Label the start and goal nodes with blue color
+        start_node, goal_node = path_ids[0], path_ids[-1]
+        nx.draw_networkx_labels(G, pos, labels={start_node: 'Start'}, font_color='blue', ax=ax)
+        nx.draw_networkx_labels(G, pos, labels={goal_node: 'Goal'}, font_color='blue', ax=ax)
+
+    plt.show()
 
 
-print("Generating graph...")
-# generate graph
-address_lsu = "Memorial Tower, Baton Rouge, LA"
-distance_lsu = 1300  # in meters
-vertices_lsu, edges_lsu = generate_graph(address_lsu, distance_lsu)
+def list_nodes(vertices):
+    """
+    Print details of each node in the vertices dictionary.
 
-print("Drawing graph...")
-draw_graph(vertices_lsu, edges_lsu)
+    Parameters:
+    - vertices (dict): Dictionary of vertices.
+    """
+    print("Nodes:")
+    for node_id, node_data in vertices.items():
+        print(f"ID: {node_id}, OSM ID: {node_data[0]}, Type: {node_data[1]}, State: {node_data[2]}, Traffic: {node_data[3]}, Longitude: {node_data[4]}, Latitude: {node_data[5]}")
+
+def list_edges(edges):
+    """
+    Print details of each edge in the edges dictionary.
+
+    Parameters:
+    - edges (dict): Dictionary of edges.
+    """
+    print("Edges:")
+    for edge_id, edge_data in edges.items():
+        print(f"ID: {edge_id}, From: {edge_data[0]}, To: {edge_data[1]}, Name: {edge_data[2]}, Direction: {edge_data[3]}, Geometry: {edge_data[4]}, State: {edge_data[5]}")
