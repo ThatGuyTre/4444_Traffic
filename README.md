@@ -7,6 +7,6 @@ This project seeks to harness the capabilities of artificial intelligence to opt
 1. Install [minicoda](https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html).
 2. Create a conda environent using `conda create --name traffic`
 3. Activate conda environment using `conda activate traffic`
-4. Install dependencies (so far): `conda install numpy pandas matplotlib` and `pip3 install osmnx networkx`
+4. Install dependencies (so far): `conda install numpy pandas matplotlib` and `pip3 install --upgrade networkx osmnx aima3`
 5. Clone this repo using `git clone https://github.com/ThatGuyTre/4444_Traffic`
-6. Run program using `python3 traffic.py`
+6. Run program using `python3 main.py`
