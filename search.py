@@ -37,20 +37,22 @@ class RoadNetworkProblem(Problem):
         node_color = self.nodes[state1][-1]
         node_delay = self.nodes[state1][-2]
 
-
         edge_key = (state1, state2)
 
         if edge_key in self.edges:
-            edge_length = self.edges[edge_key][-1]  
+            edge_length = self.edges[edge_key][-1]
         else:
             edge_length = 0
 
-        print(f"Edge from {state1} to {state2}: Length = {edge_length}")
+        speed_limit = 45 if self.nodes[state1][-2] == 'major' else 25
+        speed_limit_factor = edge_length / speed_limit
+
+        #print(f"Edge from {state1} to {state2}: Length = {edge_length}")
         
         if node_color == 'red':
-            return c + node_delay + edge_length
+            return c + node_delay + speed_limit_factor
         else:
-            return c + 1 + edge_length
+            return c + 1 + speed_limit_factor
 
     
     def h(self, node):

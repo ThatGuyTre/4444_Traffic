@@ -32,7 +32,8 @@ def gen_graph(address, distance):
     for node, data in G.nodes(data=True):
         is_traffic_signal = data.get('highway') == 'traffic_signals'
         color = random.choice(['red', 'green'])
-        delay = random.randint(1, 60) if color == 'red' else 0
+        delay = random.randint(4, 8) if is_traffic_signal else 0
+        delay_temp = delay
         nodes[node] = (
             data.get('highway', None),
             None,
@@ -40,6 +41,7 @@ def gen_graph(address, distance):
             data['x'],
             data['y'],
             delay,
+            delay_temp,
             color
         )
 
@@ -103,6 +105,18 @@ def animate_graph(vertices, edges, path_ids):
         # Draw nodes based on their type (only traffic signals and stop signs)
         traffic_signal_nodes = [node_id for node_id, node_data in vertices.items() if node_data[0] == 'traffic_signals']
         stop_sign_nodes = [node_id for node_id, node_data in vertices.items() if node_data[0] == 'stop']
+
+        for node_id in traffic_signal_nodes:
+            node_data = list(vertices[node_id])
+            if node_data[-2] <= 1:
+                node_data[-1] = 'green' if node_data[-1] == 'red' else 'red'
+                node_data[-2] = node_data[-3]
+            else:
+                print(vertices[node_id][-2])
+                node_data[-2] = node_data[-2] - 1
+                print(vertices[node_id][-2])
+
+            vertices[node_id] = tuple(node_data)
 
         node_colors = [vertices[node_id][-1] for node_id in traffic_signal_nodes]
 
