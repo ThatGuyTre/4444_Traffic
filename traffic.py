@@ -45,6 +45,7 @@ def gen_graph(address, distance):
 
     # process edges
     for u, v, data in G.edges(data=True):
+        edge_id = (u, v)
         edges[edge_id] = (
             u,
             v,
@@ -54,7 +55,6 @@ def gen_graph(address, distance):
             'major' if data.get('highway') in ['motorway', 'trunk', 'primary'] else 'minor',
             data['length']
         )
-        edge_id += 1
 
     return nodes, edges
 
