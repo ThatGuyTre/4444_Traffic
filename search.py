@@ -44,7 +44,7 @@ class RoadNetworkProblem(Problem):
         else:
             edge_length = 0
 
-        speed_limit = 45 if self.nodes[state1][-2] == 'major' else 25
+        speed_limit = 45 if self.edges[edge_key][-2] == 'major' else 25
         speed_limit_factor = edge_length / speed_limit
 
         #print(f"Edge from {state1} to {state2}: Length = {edge_length}")
