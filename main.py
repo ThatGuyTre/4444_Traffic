@@ -28,8 +28,8 @@ def main():
 
     # Get random start and goal IDs
     start_id, goal_id = get_random_start_goal(nodes)
-    #start_id = list(nodes.keys())[0]
-    #goal_id = list(nodes.keys())[-1]
+    #start_id = list(nodes.keys())[59]
+    #goal_id = list(nodes.keys())[22]
 
     # Create a directed graph for AIMA
     G = nx.DiGraph()

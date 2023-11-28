@@ -50,7 +50,7 @@ class RoadNetworkProblem(Problem):
         #print(f"Edge from {state1} to {state2}: Length = {edge_length}")
         
         if node_color == 'red':
-            return c + node_delay + speed_limit_factor
+            return c + node_delay + (speed_limit_factor / 100)
         else:
             return c + 1 + speed_limit_factor
 

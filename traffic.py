@@ -112,9 +112,7 @@ def animate_graph(vertices, edges, path_ids):
                 node_data[-1] = 'green' if node_data[-1] == 'red' else 'red'
                 node_data[-2] = node_data[-3]
             else:
-                print(vertices[node_id][-2])
                 node_data[-2] = node_data[-2] - 1
-                print(vertices[node_id][-2])
 
             vertices[node_id] = tuple(node_data)
 
@@ -151,7 +149,7 @@ def animate_graph(vertices, edges, path_ids):
 
         ax.set_title(f"Step {num}/{len(path_ids)}")
 
-    ani = animation.FuncAnimation(fig, update, frames=len(path_ids) + 1, interval=1000, repeat=False)
+    ani = animation.FuncAnimation(fig, update, frames=len(path_ids) + 1, interval=500, repeat=False)
 
     plt.show()
 
