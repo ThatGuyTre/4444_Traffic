@@ -2,6 +2,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import networkx as nx
 import osmnx as ox
+import random
 
 def gen_graph(address, distance):
     """
@@ -29,12 +30,17 @@ def gen_graph(address, distance):
 
     # process nodes
     for node, data in G.nodes(data=True):
+        is_traffic_signal = data.get('highway') == 'traffic_signals'
+        color = random.choice(['red', 'green'])
+        delay = random.randint(1, 60) if color == 'red' else 0
         nodes[node] = (
             data.get('highway', None),
             None,
             0,
             data['x'],
-            data['y']
+            data['y'],
+            delay,
+            color
         )
 
     # process edges
@@ -45,7 +51,8 @@ def gen_graph(address, distance):
             data.get('name', None),
             'one-way' if data.get('oneway', False) else 'two-way',
             data.get('geometry', None),
-            'major' if data.get('highway') in ['motorway', 'trunk', 'primary'] else 'minor'
+            'major' if data.get('highway') in ['motorway', 'trunk', 'primary'] else 'minor',
+            data['length']
         )
         edge_id += 1
 
@@ -76,8 +83,9 @@ def animate_graph(vertices, edges, path_ids):
     G = nx.DiGraph()
 
     # Add nodes to the graph
-    for node_id, node_data in vertices.items():
-        G.add_node(node_id, pos=(node_data[3], node_data[4]), type=node_data[0])
+    sorted_vertices = sorted(vertices.items(), key=lambda x: x[0])
+    for node_id, node_data in sorted_vertices:
+        G.add_node(node_id, pos=(node_data[3], node_data[4]), type=node_data[0], color = node_data[-1])
 
     # Add edges to the graph
     for edge_id, edge_data in edges.items():
@@ -96,8 +104,10 @@ def animate_graph(vertices, edges, path_ids):
         traffic_signal_nodes = [node_id for node_id, node_data in vertices.items() if node_data[0] == 'traffic_signals']
         stop_sign_nodes = [node_id for node_id, node_data in vertices.items() if node_data[0] == 'stop']
 
-        nx.draw_networkx_nodes(G, pos, nodelist=traffic_signal_nodes, node_size=50, node_color='green', ax=ax)
-        nx.draw_networkx_nodes(G, pos, nodelist=stop_sign_nodes, node_size=50, node_color='red', ax=ax)
+        node_colors = [vertices[node_id][-1] for node_id in traffic_signal_nodes]
+
+        nx.draw_networkx_nodes(G, pos, nodelist=traffic_signal_nodes, node_size=50, node_color=node_colors, ax=ax)
+        nx.draw_networkx_nodes(G, pos, nodelist=stop_sign_nodes, node_size=50, node_color='gray', ax=ax)
 
         # Draw all edges with thin lines, respecting geometry
         for u, v, data in G.edges(data=True):
@@ -151,8 +161,9 @@ def plot_graph(vertices, edges, path_ids):
     G = nx.DiGraph()
 
     # Add nodes to the graph
-    for node_id, node_data in vertices.items():
-        G.add_node(node_id, pos=(node_data[3], node_data[4]), type=node_data[0])
+    sorted_vertices = sorted(vertices.items(), key=lambda x: x[0])
+    for node_id, node_data in sorted_vertices:
+        G.add_node(node_id, pos=(node_data[3], node_data[4]), type=node_data[0], color = node_data[-1])
 
     # Add edges to the graph
     for edge_id, edge_data in edges.items():
@@ -168,8 +179,10 @@ def plot_graph(vertices, edges, path_ids):
     traffic_signal_nodes = [node_id for node_id, node_data in vertices.items() if node_data[0] == 'traffic_signals']
     stop_sign_nodes = [node_id for node_id, node_data in vertices.items() if node_data[0] == 'stop']
 
-    nx.draw_networkx_nodes(G, pos, nodelist=traffic_signal_nodes, node_size=50, node_color='green', ax=ax)
-    nx.draw_networkx_nodes(G, pos, nodelist=stop_sign_nodes, node_size=50, node_color='red', ax=ax)
+    node_colors = [vertices[node_id][-1] for node_id in traffic_signal_nodes]
+
+    nx.draw_networkx_nodes(G, pos, nodelist=traffic_signal_nodes, node_size=50, node_color=node_colors, ax=ax)
+    nx.draw_networkx_nodes(G, pos, nodelist=stop_sign_nodes, node_size=50, node_color='gray', ax=ax)
 
     # Draw all edges with thin lines, respecting geometry
     for u, v, data in G.edges(data=True):

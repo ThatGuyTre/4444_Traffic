@@ -20,10 +20,11 @@ def heuristic(node1, node2, nodes):
 
 class RoadNetworkProblem(Problem):
 
-    def __init__(self, initial, goal, graph, nodes):
+    def __init__(self, initial, goal, graph, nodes, edges):
         super().__init__(initial, goal)
         self.graph = graph
         self.nodes = nodes  # Store the nodes dictionary
+        self.edges = edges
 
     def actions(self, state):
         return list(self.graph.successors(state))
@@ -32,7 +33,15 @@ class RoadNetworkProblem(Problem):
         return action
     
     def path_cost(self, c, state1, action, state2):
-        return c + 1
+        node_color = self.nodes[state1][-1]
+        node_delay = self.nodes[state1][-2]
+        edge_length = self.edges[state1][-1]
+
+        # adjust the cost based on the node color
+        if node_color == 'red':
+            return c + node_delay + edge_length  # increase cost if the node color is red
+        else:
+            return c + 1 + edge_length  # default cost for other colors
     
     def h(self, node):
         return heuristic(node.state, self.goal, self.nodes)  # Use the nodes dictionary
