@@ -38,11 +38,7 @@ class RoadNetworkProblem(Problem):
         node_delay = self.nodes[state1][-2]
 
         edge_key = (state1, state2)
-
-        if edge_key in self.edges:
-            edge_length = self.edges[edge_key][-1]
-        else:
-            edge_length = 0
+        edge_length = self.edges[edge_key][-1]
 
         speed_limit = 45 if self.edges[edge_key][-2] == 'major' else 25
         speed_limit_factor = edge_length / speed_limit
