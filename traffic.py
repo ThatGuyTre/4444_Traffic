@@ -55,7 +55,8 @@ def gen_graph(address, distance):
             'one-way' if data.get('oneway', False) else 'two-way',
             data.get('geometry', None),
             'major' if data.get('highway') in ['motorway', 'trunk', 'primary'] else 'minor',
-            data['length']
+            data['length'],
+            data.get('maxspeed', None)
         )
 
     return nodes, edges

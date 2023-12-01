@@ -21,7 +21,7 @@ def get_random_start_goal(nodes):
 def main():
     # Define the address and distance for the road network
     address = 'Louisiana State University, Baton Rouge, LA'
-    distance = 2000
+    distance = 20000
 
     # Generate graph nodes and edges
     nodes, edges = gen_graph(address, distance)
@@ -41,12 +41,15 @@ def main():
     result = astar_search(problem)
 
     # Extract node IDs from the path
-    path_ids = [node.state for node in result.path()]
+    if result is not None:
+        # Access the path if a solution exists
+        path_ids = [node.state for node in result.path()]
+        print("Solution path:", path_ids)
+        #plot_graph(nodes, edges, path_ids)
+        animate_graph(nodes, edges, path_ids)
+    else:
+        print("No solution found.")
 
-    # Output and plot the result
-    print("Path found:", path_ids)
-    #plot_graph(nodes, edges, path_ids)
-    animate_graph(nodes, edges, path_ids)
 
 if __name__ == "__main__":
     main()

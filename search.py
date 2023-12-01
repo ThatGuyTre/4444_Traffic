@@ -27,20 +27,46 @@ class RoadNetworkProblem(Problem):
         self.edges = edges
 
     def actions(self, state):
-        return list(self.graph.successors(state))
+        acts = set(self.graph.successors(state))
+        print("ACTIONS FOR " + str(self) + ": " + str(acts))
+
+        # WIP - remove red nodes from actions
+        # to get this to start doing stuff, change line below to
+        # modified_acts = set()
+        modified_acts = set(acts)
+
+        for act in acts:
+            if self.nodes[act][7] != 'red':
+                modified_acts.add(act)
+            else:
+                print(str(act) + " was red and therefore removed from " + str(acts))
+
+        modified_acts.add(state)
+
+        return list(modified_acts)
     
     def result(self, state, action):
         return action
     
     def path_cost(self, c, state1, action, state2):
 
-        node_color = self.nodes[state1][-1]
-        node_delay = self.nodes[state1][-2]
+        node_color = self.nodes[state1][7]
+        node_delay = self.nodes[state1][6]
 
         edge_key = (state1, state2)
-        edge_length = self.edges[edge_key][-1]
 
-        speed_limit = 45 if self.edges[edge_key][-2] == 'major' else 25
+        if edge_key not in self.edges:
+            return float('inf')  # or any other appropriate value to indicate an invalid edge
+
+        edge_length = self.edges[edge_key][6]
+
+        # Get the maxspeed attribute of the edge
+        speed_attribute = self.edges[edge_key][7]
+        # Make sure it's a string and not a list
+        speed_string = speed_attribute[0] if isinstance(speed_attribute, list) and speed_attribute else speed_attribute
+        # Extract the speed limit from the string
+        speed_limit = int(speed_string.split(maxsplit=1)[0]) if speed_string is not None else 30
+        # Calculate the speed limit factor by incorporating the edge length
         speed_limit_factor = edge_length / speed_limit
 
         #print(f"Edge from {state1} to {state2}: Length = {edge_length}")
