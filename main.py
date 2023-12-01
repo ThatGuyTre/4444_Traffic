@@ -21,7 +21,7 @@ def get_random_start_goal(nodes):
 def main():
     # Define the address and distance for the road network
     address = 'Louisiana State University, Baton Rouge, LA'
-    distance = 20000
+    distance = 2000
 
     # Generate graph nodes and edges
     nodes, edges = gen_graph(address, distance)
