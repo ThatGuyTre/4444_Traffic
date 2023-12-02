@@ -59,6 +59,7 @@ class RoadNetworkProblem(Problem):
             return float('inf')  # or any other appropriate value to indicate an invalid edge
 
         edge_length = self.edges[edge_key][6]
+        length_miles = edge_length / 0.000621371 # convert meters to miles
 
         # Get the maxspeed attribute of the edge
         speed_attribute = self.edges[edge_key][7]
@@ -67,14 +68,16 @@ class RoadNetworkProblem(Problem):
         # Extract the speed limit from the string
         speed_limit = int(speed_string.split(maxsplit=1)[0]) if speed_string is not None else 30
         # Calculate the speed limit factor by incorporating the edge length
-        speed_limit_factor = edge_length / speed_limit
+        minutes_to_complete = length_miles / speed_limit * 60 # miles / (miles / hour) * (minutes / hour) = minutes
 
         #print(f"Edge from {state1} to {state2}: Length = {edge_length}")
         
         if node_color == 'red':
-            return c + node_delay + (speed_limit_factor / 100)
+            # Cost plus 10 seconds per light "step", plus the time it takes to go down the road
+            return c + (node_delay / 6) + minutes_to_complete
         else:
-            return c + 1 + speed_limit_factor
+            # Cost plus the time it takes to go down thw road
+            return c + minutes_to_complete
 
     
     def h(self, node):
