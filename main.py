@@ -1,7 +1,7 @@
 # Import necessary modules
 import random
 import networkx as nx
-from traffic import gen_graph, plot_graph
+from traffic import gen_graph, plot_graph, animate_graph
 from search import RoadNetworkProblem
 from aima3.search import astar_search
 
@@ -28,6 +28,8 @@ def main():
 
     # Get random start and goal IDs
     start_id, goal_id = get_random_start_goal(nodes)
+    #start_id = list(nodes.keys())[59]
+    #goal_id = list(nodes.keys())[22]
 
     # Create a directed graph for AIMA
     G = nx.DiGraph()
@@ -35,15 +37,19 @@ def main():
         G.add_edge(edge[0], edge[1])  # Add edges using OSM IDs
 
     # Initialize and solve the road network problem
-    problem = RoadNetworkProblem(start_id, goal_id, G, nodes)
+    problem = RoadNetworkProblem(start_id, goal_id, G, nodes, edges)
     result = astar_search(problem)
 
     # Extract node IDs from the path
-    path_ids = [node.state for node in result.path()]
+    if result is not None:
+        # Access the path if a solution exists
+        path_ids = [node.state for node in result.path()]
+        print("Solution path:", path_ids)
+        #plot_graph(nodes, edges, path_ids)
+        animate_graph(nodes, edges, path_ids)
+    else:
+        print("No solution found.")
 
-    # Output and plot the result
-    print("Path found:", path_ids)
-    plot_graph(nodes, edges, path_ids)
 
 if __name__ == "__main__":
     main()
