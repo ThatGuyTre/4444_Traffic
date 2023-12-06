@@ -150,6 +150,9 @@ def animate_graph(vertices, edges, path_ids):
 
         ax.set_title(f"Step {num}/{len(path_ids)}")
 
+        # savefig with higher resolution
+        # plt.savefig('animation' + str(num) + '.png', dpi=300)
+
     ani = animation.FuncAnimation(fig, update, frames=len(path_ids) + 1, interval=500, repeat=False)
 
     plt.show()
